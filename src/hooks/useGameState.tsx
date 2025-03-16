@@ -36,9 +36,9 @@ type GameState = {
   matches: Position[][];
   lastMatchesByColor: {
     [key in TileType]?: {
-      matchedTiles: number;
-      comboValue: number;
-      scoreGained: number;
+    matchedTiles: number;
+    comboValue: number;
+    scoreGained: number;
     };
   };
   level: number;
@@ -57,6 +57,7 @@ type GameState = {
   showKill: boolean;
   showAttack: boolean;
   totalGold: number;
+  animationInProgress: boolean;
 };
 
 export const useGameState = () => {
@@ -93,6 +94,7 @@ export const useGameState = () => {
     showKill: false,
     showAttack: false,
     totalGold: 0,
+    animationInProgress: false
   });
 
   const timerRef = useRef<number | null>(null);
@@ -108,19 +110,35 @@ export const useGameState = () => {
   // Function to show level up animation
   const showLevelUpAnimation = () => {
     levelUpSound.current.play();
-    setState(prev => ({ ...prev, showLevelUp: true }));
+    setState(prev => ({ 
+      ...prev, 
+      showLevelUp: true,
+      animationInProgress: true 
+    }));
     setTimeout(() => {
-      setState(prev => ({ ...prev, showLevelUp: false }));
-    }, 1500);
+      setState(prev => ({ 
+        ...prev, 
+        showLevelUp: false,
+        animationInProgress: false 
+      }));
+    }, 1000);
   };
 
   // Function to show kill animation
   const showKillAnimation = () => {
     killSound.current.play();
-    setState(prev => ({ ...prev, showKill: true }));
+    setState(prev => ({ 
+      ...prev, 
+      showKill: true,
+      animationInProgress: true 
+    }));
     setTimeout(() => {
-      setState(prev => ({ ...prev, showKill: false }));
-    }, 1500);
+      setState(prev => ({ 
+        ...prev, 
+        showKill: false,
+        animationInProgress: false 
+      }));
+    }, 1000);
   };
 
   // Initialize the game
@@ -151,6 +169,7 @@ export const useGameState = () => {
       showKill: false,
       showAttack: false,
       totalGold: 0,
+      animationInProgress: false
     });
     lastTimeRef.current = Date.now();
   }, []);
@@ -307,26 +326,46 @@ export const useGameState = () => {
     };
   }, [state.status, state.enemyAttack, handleGameOver]);
 
-  // Update enemy attack timer
+  // Update enemy attack timer with batched updates
   useEffect(() => {
     if (state.status !== GameStatus.PLAYING) return;
 
     let startTime = performance.now();
+    let lastUpdate = performance.now();
     let animationFrameId: number;
+    let batchedUpdates = {
+      timeRemaining: state.enemyAttackTimeRemaining,
+      showAttack: false
+    };
 
     const updateTimer = (currentTime: number) => {
+      // Limit updates to every 100ms to reduce state updates
+      if (currentTime - lastUpdate < 100) {
+        animationFrameId = requestAnimationFrame(updateTimer);
+        return;
+      }
+
       const elapsedTime = (currentTime - startTime) / 1000;
       const cycleTime = elapsedTime % ATTACK_INTERVAL;
       const remainingTime = ATTACK_INTERVAL - cycleTime;
 
-      // Update state if the time has changed significantly
-      if (Math.abs(remainingTime - state.enemyAttackTimeRemaining) > 0.01) {
-        setState((prevState) => ({
-          ...prevState,
-          enemyAttackTimeRemaining: remainingTime,
-          // Show attack text when timer is close to 0
+      // Batch updates
+      if (Math.abs(remainingTime - batchedUpdates.timeRemaining) > 0.1) {
+        batchedUpdates = {
+          timeRemaining: remainingTime,
           showAttack: remainingTime < 0.5
-        }));
+        };
+        
+        // Only update state if not in the middle of an animation
+        if (!state.animationInProgress) {
+          setState((prevState) => ({
+            ...prevState,
+            enemyAttackTimeRemaining: batchedUpdates.timeRemaining,
+            showAttack: batchedUpdates.showAttack
+          }));
+        }
+        
+        lastUpdate = currentTime;
       }
 
       // Reset start time when a new cycle begins
@@ -344,11 +383,12 @@ export const useGameState = () => {
         cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [state.status]);
+  }, [state.status, state.animationInProgress]);
 
   // Handle tile selection
   const selectTile = useCallback(
     (tile: Tile) => {
+      // Early return if we're already processing a move or the game isn't playing
       if (
         state.status !== GameStatus.PLAYING ||
         processingMoveRef.current ||
@@ -357,8 +397,28 @@ export const useGameState = () => {
         return;
 
       setState((prevState) => {
-        // If no tile is selected, select this one
+        // If no tile is selected, check if this tile has potential matches
         if (!prevState.selectedTile) {
+          // Check if this tile has any potential matches with adjacent tiles
+          const hasPotentialMatch = prevState.board.some((row, rowIndex) =>
+            row.some((t, colIndex) => {
+              if (t.id === tile.id) return false;
+              if (!areAdjacent(tile.position, { row: rowIndex, col: colIndex }, prevState.board)) return false;
+              
+              // Try swapping and check for matches
+              const testBoard = swapTiles(
+                prevState.board,
+                tile.position,
+                { row: rowIndex, col: colIndex }
+              );
+              const matches = findAllMatches(testBoard);
+              return matches.length > 0;
+            })
+          );
+
+          // Only allow selection if there's a potential match
+          if (!hasPotentialMatch) return prevState;
+
           return {
             ...prevState,
             board: prevState.board.map((row) =>
@@ -385,6 +445,7 @@ export const useGameState = () => {
 
         // Check if tiles are adjacent
         if (areAdjacent(prevState.selectedTile.position, tile.position, prevState.board)) {
+          // Set processing flag immediately
           processingMoveRef.current = true;
 
           // Swap tiles and check for matches
@@ -397,34 +458,23 @@ export const useGameState = () => {
           // Check for matches after swap
           const matches = findAllMatches(newBoard);
 
-          // If no matches, swap back
+          // If no matches, swap back immediately
           if (matches.length === 0) {
             // Store the tile positions before we lose them
             const firstPos = { ...prevState.selectedTile.position };
             const secondPos = { ...tile.position };
             
-            setTimeout(() => {
-              setState((prevState) => {
-                // Safely revert the swap using stored positions
-                const revertedBoard = swapTiles(
-                  prevState.board,
-                  secondPos,
-                  firstPos
-                );
-                processingMoveRef.current = false;
-                return {
-                  ...prevState,
-                  board: revertedBoard.map((row) =>
-                    row.map((t) => ({ ...t, isSelected: false }))
-                  ),
-                  selectedTile: null,
-                };
-              });
-            }, 300);
+            // Clear processing flag and revert the swap
+            processingMoveRef.current = false;
+            const revertedBoard = swapTiles(
+              newBoard,
+              secondPos,
+              firstPos
+            );
 
             return {
               ...prevState,
-              board: newBoard.map((row) =>
+              board: revertedBoard.map((row) =>
                 row.map((t) => ({ ...t, isSelected: false }))
               ),
               selectedTile: null,

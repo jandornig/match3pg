@@ -36,8 +36,8 @@ const GameOverModal = ({
       {isOpen && (
         <Dialog open={isOpen} onOpenChange={() => {}}>
           <DialogPortal>
-            <DialogOverlay className="bg-black/30 z-50" />
-            <DialogContent className="sm:max-w-md glassmorphism !pr-6 z-50">
+            <DialogOverlay className="fixed inset-0 bg-black/50 z-[100]" />
+            <DialogContent className="fixed left-[50%] top-[50%] z-[101] translate-x-[-50%] translate-y-[-50%] sm:max-w-md glassmorphism !pr-6">
               <DialogHeader>
                 <DialogTitle className="text-4xl text-center mb-4">Game Over!</DialogTitle>
                 <DialogDescription className="text-xl space-y-4">
