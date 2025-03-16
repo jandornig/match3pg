@@ -1,6 +1,6 @@
 # Match-3 RPG Game
 
-A modern match-3 puzzle game with RPG elements, built with React, TypeScript, and Vite.
+A modern match-3 puzzle game with RPG elements, built with React, TypeScript, and Vite. This project was initiated using Lovable and continued development with Cursor, embracing the vibe-coding style.
 
 ## Features
 
@@ -50,17 +50,47 @@ Two different combo modes:
 - Match highlighting
 - Score tracking
 
-## Getting Started
+## Development
 
-1. Clone the repository
+This project is built with modern web technologies and follows best practices for game development. The codebase is organized into components and utilities for maintainability and extensibility.
+
+### Getting Started
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd match-3-rpg
+```
+
 2. Install dependencies:
 ```bash
 npm install
 ```
+
 3. Start the development server:
 ```bash
 npm run dev
 ```
+
+### Development Options
+
+You can develop this project using:
+- Your preferred IDE or code editor
+- GitHub Codespaces
+- Direct GitHub web editor
+
+### Deployment
+
+You can deploy this project using any static site hosting service:
+- Netlify
+- Vercel
+- GitHub Pages
+- Firebase Hosting
+
+### Key Files
+- `src/hooks/useGameState.tsx`: Core game logic and state management
+- `src/utils/gameUtils.ts`: Game mechanics and utility functions
+- `src/components/`: UI components and game elements
 
 ## Technologies Used
 - React
@@ -76,15 +106,6 @@ npm run dev
 - Create special combinations for powerful effects
 - Watch your health and enemy's attacks
 - Level up to increase your power
-
-## Development
-
-This project is built with modern web technologies and follows best practices for game development. The codebase is organized into components and utilities for maintainability and extensibility.
-
-Key files:
-- `src/hooks/useGameState.tsx`: Core game logic and state management
-- `src/utils/gameUtils.ts`: Game mechanics and utility functions
-- `src/components/`: UI components and game elements
 
 ## Contributing
 
