@@ -1,4 +1,94 @@
-# Welcome to your Lovable project
+# Match-3 RPG Game
+
+A modern match-3 puzzle game with RPG elements, built with React, TypeScript, and Vite.
+
+## Features
+
+### Core Gameplay
+- Match 3 or more tiles of the same color to clear them
+- Tiles cascade down to fill empty spaces
+- Special matches of 4 or more tiles create powerful effects
+- Multiple tile colors with unique effects:
+  - Red/Purple: Deal damage to enemy
+  - Green: Heal the player
+  - Blue: Gain experience points
+  - Yellow: Earn gold
+  - Grey: Triple value multiplier
+
+### Special Tiles
+- Bomb tiles: Explode in a 2-tile radius when matched
+- Bolt tiles: Clear all tiles of the same color from the board
+
+### Combo System
+Two different combo modes:
+1. Per-Color Mode (5-second timer)
+   - Each color has its own combo multiplier
+   - Matching the same color consecutively increases its multiplier
+   - Timer resets to 5 seconds with each match
+   - Multipliers reset when timer expires
+
+2. Unified Mode (3-second timer)
+   - Single combo multiplier for all colors
+   - Any match increases the global multiplier
+   - Timer resets to 3 seconds with each match
+   - Multiplier resets when timer expires
+
+### RPG Elements
+- Level progression system
+- Player health and enemy health management
+- Experience points and leveling up
+- Enemy combat with periodic attacks
+- Gold accumulation
+- Base block value increases with levels
+- Enemy scaling with increased health and damage
+
+### Visual Effects
+- Level up animations
+- Enemy defeat animations
+- Attack warnings
+- Combo timers
+- Match highlighting
+- Score tracking
+
+## Getting Started
+
+1. Clone the repository
+2. Install dependencies:
+```bash
+npm install
+```
+3. Start the development server:
+```bash
+npm run dev
+```
+
+## Technologies Used
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- shadcn-ui
+
+## Game Controls
+- Click or tap to select a tile
+- Click or tap an adjacent tile to swap
+- Match 3 or more tiles to clear them
+- Create special combinations for powerful effects
+- Watch your health and enemy's attacks
+- Level up to increase your power
+
+## Development
+
+This project is built with modern web technologies and follows best practices for game development. The codebase is organized into components and utilities for maintainability and extensibility.
+
+Key files:
+- `src/hooks/useGameState.tsx`: Core game logic and state management
+- `src/utils/gameUtils.ts`: Game mechanics and utility functions
+- `src/components/`: UI components and game elements
+
+## Contributing
+
+Feel free to submit issues and enhancement requests!
 
 ## Project info
 
@@ -49,16 +139,6 @@ npm run dev
 - Select the "Codespaces" tab.
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
 
 ## How can I deploy this project?
 
